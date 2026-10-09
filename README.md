@@ -35,7 +35,7 @@ Nothing here is a repackaged binary from somewhere else. It is built from source
 |---|---|
 | Source | Mesa 26.3.0-devel, from [`funnymdzz/mesa`](https://github.com/funnymdzz/mesa), a Mesa tree that adds a `mali_kbase` backend |
 | Mali-G57 and G77 generation support | the patch series from [`Noysz/panvk-g99-jm`](https://github.com/Noysz/panvk-g99-jm) |
-| My patches | 10, listed under [What I added](#what-i-added) |
+| My patches | 24, summarized under [What I added](#what-i-added) |
 | Toolchain | Android NDK 27.3, meson cross build, `aarch64`, API level 33 |
 | Packaging | `.adpkg.zip`: `libvulkan_panfrost.so` plus `meta.json` |
 
@@ -61,6 +61,16 @@ on top of `mali_kbase` is what makes this installable without root.
 - The GPU clock stayed low, which made frames take more than twice as long.
   The driver now queues work the way the clock governor expects.
 - A scene that submits the same commands more than once rendered black.
+- Some games closed by themselves after a minute or two: a storage area for
+  textures handed over at draw time was too small.
+- A shader with many lights ran about six times slower than on the stock driver.
+  The shader compiler loaded every light's data up front, ran out of registers,
+  and wrote the values to memory and read them back for every pixel.
+- Draws that take their parameters from a buffer drew every object with the
+  first object's position and colour.
+- Smaller speed-ups: vertex data is packed without gaps, vertex outputs that
+  nothing reads are dropped, hidden pixels are skipped earlier, and screen areas
+  that did not change are not written again.
 
 ---
 
@@ -86,9 +96,10 @@ Wine, no DXVK, no Box64, no emulation. One variable: the driver `.so`.
 
 Frame times against the stock Mali driver, on those four scenes: three are within
 2% of stock or faster. `oit_depth_peeling` takes 8.0 to 9.1 ms against 7.4 ms on
-stock.
+stock. A fifth scene, `pipeline_barriers` (24 lights), takes 10.6 ms against
+8.7 ms on stock since v0.13.0; it took 67 ms before.
 
-Four scenes is a small sample. Do not read it as "as fast as stock" in general.
+Five scenes is a small sample. Do not read it as "as fast as stock" in general.
 
 ## Other devices: not tested, no guarantees
 
@@ -146,7 +157,7 @@ default, and long sessions.
 to start rather than failing later:
 
 Geometry shaders, tessellation shaders, transform feedback (the stock driver
-does offer this one), polygon mode, and float depth bias representation.
+offers these three), polygon mode, and float depth bias representation.
 
 ---
 

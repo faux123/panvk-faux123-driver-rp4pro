@@ -11,8 +11,8 @@ The stock driver on this device offers Vulkan 1.1. This build reports Vulkan 1.3
 I apply fixes that are not upstream in mesa, and I verify every one of them on
 my own hardware before I release it. Each release lists what it changes.
 
-**This is an early, experimental driver. It is not conformant, and no game has
-been run on it yet.**
+**This is an early, experimental driver. It is not conformant, and one game has
+been run on it: Giana Sisters: Twisted Dreams, through GameNative-Mali.**
 
 **This is a proof of concept, released as is, with no support.** See
 [No support](#no-support).
@@ -35,7 +35,7 @@ Nothing here is a repackaged binary from somewhere else. It is built from source
 |---|---|
 | Source | Mesa 26.3.0-devel, from [`funnymdzz/mesa`](https://github.com/funnymdzz/mesa), a Mesa tree that adds a `mali_kbase` backend |
 | Mali-G57 and G77 generation support | the patch series from [`Noysz/panvk-g99-jm`](https://github.com/Noysz/panvk-g99-jm) |
-| My patches | 25, summarized under [What I added](#what-i-added) |
+| My patches | 27, summarized under [What I added](#what-i-added) |
 | Toolchain | Android NDK 27.3, meson cross build, `aarch64`, API level 33 |
 | Packaging | `.adpkg.zip`: `libvulkan_panfrost.so` plus `meta.json` |
 
@@ -74,6 +74,11 @@ on top of `mali_kbase` is what makes this installable without root.
   frame still being drawn, so the GPU sat idle a tenth of the time; a scene that
   submits the same commands every frame waited for the GPU between every two
   passes; and work of two passes no longer ran side by side.
+- A game running through Wine and DXVK showed short black dashes in its
+  textures. The app hands the driver memory that the game writes through a
+  cached mapping, and the GPU read it before the processor's cache had written
+  it out. Since v0.15.0 the driver writes those lines out before each submit,
+  for the buffers the GPU can read.
 - Smaller speed-ups: vertex data is packed without gaps, vertex outputs that
   nothing reads are dropped, hidden pixels are skipped earlier, and screen areas
   that did not change are not written again.
@@ -156,8 +161,8 @@ To go back, select the system driver again. Nothing on the device is replaced.
 
 ## What works and what does not
 
-**Not tested yet:** any game, DXVK, window resize, present modes other than the
-default, and long sessions.
+**Not tested yet:** any game other than Giana Sisters: Twisted Dreams, window
+resize, present modes other than the default, and long sessions.
 
 **Not offered by this driver on the Mali-G77**, so an app that needs them refuses
 to start rather than failing later:

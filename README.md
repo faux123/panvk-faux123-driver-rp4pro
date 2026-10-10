@@ -35,7 +35,7 @@ Nothing here is a repackaged binary from somewhere else. It is built from source
 |---|---|
 | Source | Mesa 26.3.0-devel, from [`funnymdzz/mesa`](https://github.com/funnymdzz/mesa), a Mesa tree that adds a `mali_kbase` backend |
 | Mali-G57 and G77 generation support | the patch series from [`Noysz/panvk-g99-jm`](https://github.com/Noysz/panvk-g99-jm) |
-| My patches | 24, summarized under [What I added](#what-i-added) |
+| My patches | 25, summarized under [What I added](#what-i-added) |
 | Toolchain | Android NDK 27.3, meson cross build, `aarch64`, API level 33 |
 | Packaging | `.adpkg.zip`: `libvulkan_panfrost.so` plus `meta.json` |
 
@@ -68,6 +68,12 @@ on top of `mali_kbase` is what makes this installable without root.
   and wrote the values to memory and read them back for every pixel.
 - Draws that take their parameters from a buffer drew every object with the
   first object's position and colour.
+- Geometry shaders, tessellation, and transform feedback come from the newer
+  Noysz patch series since v0.14.0. That series made the driver slower on this
+  device in three ways, which I fixed: the screen got no completion signal for a
+  frame still being drawn, so the GPU sat idle a tenth of the time; a scene that
+  submits the same commands every frame waited for the GPU between every two
+  passes; and work of two passes no longer ran side by side.
 - Smaller speed-ups: vertex data is packed without gaps, vertex outputs that
   nothing reads are dropped, hidden pixels are skipped earlier, and screen areas
   that did not change are not written again.
@@ -84,7 +90,7 @@ The test rig is the Khronos [Vulkan-Samples](https://github.com/KhronosGroup/Vul
 app, rebuilt with AdrenoTools linked in so it loads a chosen driver directly. No
 Wine, no DXVK, no Box64, no emulation. One variable: the driver `.so`.
 
-- 28 offscreen graphics and compute tests pass: triangle, indexed and indirect
+- 33 offscreen graphics and compute tests pass: triangle, indexed and indirect
   draws, depth, stencil, blend, 4x MSAA, textures, multiple render targets,
   occlusion queries, copies, a compute dispatch, and fences.
 - On screen, four sample scenes were run and looked at: `hello_triangle`
@@ -156,8 +162,11 @@ default, and long sessions.
 **Not offered by this driver on the Mali-G77**, so an app that needs them refuses
 to start rather than failing later:
 
-Geometry shaders, tessellation shaders, transform feedback (the stock driver
-offers these three), polygon mode, and float depth bias representation.
+Polygon mode and float depth bias representation.
+
+Geometry shaders, tessellation shaders, and transform feedback are offered since
+v0.14.0. On this device they have been checked with three small tests and one
+sample scene, not with a conformance run and not with a game.
 
 ---
 

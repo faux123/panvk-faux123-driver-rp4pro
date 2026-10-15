@@ -40,7 +40,7 @@ Nothing here is a repackaged binary from somewhere else. It is built from source
 |---|---|
 | Source | Mesa 26.3.0-devel, from [`funnymdzz/mesa`](https://github.com/funnymdzz/mesa), a Mesa tree that adds a `mali_kbase` backend |
 | Mali-G57 and G77 generation support | the patch series from [`Noysz/panvk-g99-jm`](https://github.com/Noysz/panvk-g99-jm) |
-| My patches | 28, summarized under [What I added](#what-i-added) |
+| My patches | 29, summarized under [What I added](#what-i-added) |
 | Toolchain | Android NDK 27.3, meson cross build, `aarch64`, API level 33 |
 | Packaging | `.adpkg.zip`: `libvulkan_panfrost.so` plus `meta.json` |
 
@@ -91,6 +91,12 @@ on top of `mali_kbase` is what makes this installable without root.
   shader asks for. Since v0.16.0 the driver gives such a compute job at least
   4 KiB. The cinematic now plays at 6 to 7 frames a second. The cost is about
   96 MB of GPU memory for a command buffer that runs such a job.
+- **Blending is advertised only where the GPU's blender works** since v0.17.0. The
+  driver used to say it could blend into 32-bit float images, which this GPU
+  can only do in the shader. An app that picks the widest float format it can
+  blend into then drew twice the data per pixel that it draws on the stock
+  driver, which does not advertise it. With this, my 4K HDR test scene takes
+  36 ms a frame against 41 ms on the stock driver (about 42 ms, drawing twice the data before).
 - Smaller speed-ups: vertex data is packed without gaps, vertex outputs that
   nothing reads are dropped, hidden pixels are skipped earlier, and screen areas
   that did not change are not written again.

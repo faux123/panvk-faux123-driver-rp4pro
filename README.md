@@ -35,7 +35,7 @@ Nothing here is a repackaged binary from somewhere else. It is built from source
 |---|---|
 | Source | Mesa 26.3.0-devel, from [`funnymdzz/mesa`](https://github.com/funnymdzz/mesa), a Mesa tree that adds a `mali_kbase` backend |
 | Mali-G57 and G77 generation support | the patch series from [`Noysz/panvk-g99-jm`](https://github.com/Noysz/panvk-g99-jm) |
-| My patches | 27, summarized under [What I added](#what-i-added) |
+| My patches | 28, summarized under [What I added](#what-i-added) |
 | Toolchain | Android NDK 27.3, meson cross build, `aarch64`, API level 33 |
 | Packaging | `.adpkg.zip`: `libvulkan_panfrost.so` plus `meta.json` |
 
@@ -79,6 +79,13 @@ on top of `mali_kbase` is what makes this installable without root.
   cached mapping, and the GPU read it before the processor's cache had written
   it out. Since v0.15.0 the driver writes those lines out before each submit,
   for the buffers the GPU can read.
+- **A game ran at 0.2 frames a second** (Dragon Ball Sparking Zero in Fauxium,
+  its opening cinematic), and the kernel stopped a GPU job every five seconds.
+  A compute shader that runs out of registers parks values in scratch memory,
+  and on this GPU it needs at least 4 KiB of it per thread, more than the
+  shader asks for. Since v0.16.0 the driver gives such a compute job at least
+  4 KiB. The cinematic now plays at 6 to 7 frames a second. The cost is about
+  96 MB of GPU memory for a command buffer that runs such a job.
 - Smaller speed-ups: vertex data is packed without gaps, vertex outputs that
   nothing reads are dropped, hidden pixels are skipped earlier, and screen areas
   that did not change are not written again.
